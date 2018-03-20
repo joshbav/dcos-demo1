@@ -1,0 +1,23 @@
+---
+pools:
+  - name: nginx-example
+    count: 1
+    haproxy:
+      frontends:
+        - bindPort: 80
+          protocol: HTTP
+          linkBackend:
+              map:
+                - hostEq: ReplaceThis
+                  backend: nginx-example
+
+      backends:
+        - name: nginx-example
+          protocol: HTTP
+          servers:
+            - framework:
+                value: marathon
+              task:
+                value: nginx-example
+              port:
+                name: nginx-example

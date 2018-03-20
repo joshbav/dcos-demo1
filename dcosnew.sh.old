@@ -1,0 +1,161 @@
+#!/bin/bash
+#
+# Revision 2-21-18
+#
+# This script sets up an existing CCM cluster with nginx, cassandra, and a basic load generators. 
+#
+# The first argument is the master URL, the second is the AWS ELB that is in front of the public agent
+# Simply copy the URLs from CCM and paste them to the CLI
+#
+
+# add the CCM key to ssh, note ssh-add is ephemeral and a reboot will clear it
+ssh-add ~/ccm-priv.key 
+
+if [ $1 == "" ]
+then
+	echo
+	echo " A master node's URL was not entered. Aborting."
+	echo
+	exit 1
+fi
+
+if [ $2 == "" ]
+then
+        echo
+        echo " The ELB URL was not entered. Aborting."
+        echo
+        exit 1
+fi
+
+
+# For the master change https to http
+MASTER_URL=$(echo $1 | sed 's/https/http/')
+
+echo
+echo "Master's URL: " $MASTER_URL
+
+# For the public node's ELB change https to http, and change .com/ to just .com
+ELB=$(echo $2 | sed s'/https/http/')
+ELB=$(echo $ELB | sed s'/.com\//.com/')
+
+echo
+echo "Public agent ELB URL: " $ELB
+
+#echo
+#echo This script will install nginx, edge-lb for nginx, beta-kubernetes, and the first Cassandra version that uses the SDK.
+#echo An 11 node CCM cluster is necessary for this
+#echo
+
+# Clean out ALL existing clusters since we use a lot of CCM clusters
+# Warning, you might not want this done if you have a normal lab system you use
+echo
+echo "Removing all of the CLI's configured DC/OS clusters"
+rm -rf ~/.dcos/clusters
+
+echo 
+echo "Running command: dcos cluster setup ..."
+dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=deleteme
+
+
+###### Install K8S, this takes a while so starting it now
+# echo
+# echo Installing beta-kubernetes
+# TODO: UNCOMMENT dcos package install beta-kubernetes --yes
+## per: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+## brew install kubectl
+## brew install bash-completion
+
+###### Install the CLI sub commands that might be used
+# Note the subcommand modules in 1.10 onward are now installed for a particular cluster, 
+# thus the modules need to be re-installed for each new cluster
+# So to make things simple we're just installing the common ones 
+echo
+echo "Installing DCOS CLI modules"
+dcos package install dcos-enterprise-cli --cli --yes
+# NOTE because I normally demo cassandr and show the upgrade process, I'm not installing the new version
+### dcos package install cassandra --cli --yes
+#dcos package install datastax-dse --cli --yes
+#dcos package install datastax-ops --cli --yes
+dcos package install spark --cli --yes
+dcos package install kafka --cli --yes
+#dcos package install confluent-kafka --cli --yes
+#dcos package install elastic --cli --yes
+dcos package install hdfs --cli --yes
+#dcos package install kibana --cli --yes
+#dcos package install portworx --cli --yes
+### TODO: change from beta when GA is released
+dcos package install beta-kubernetes --cli --yes
+
+# debug # read -p "Press enter to continue."
+
+# OLD  dcos package install marathon-lb --yes
+
+####### ADD EDGE-LB v0.1.9
+echo
+echo
+echo Installing repo for Edge-LB v0.1.9
+echo NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOTE BE UP TO DATE
+echo
+echo
+dcos package repo add --index=0 edge-lb https://edge-lb-infinity-artifacts.s3.amazonaws.com/permanent/tag/v0.1.9/edgelb/stub-universe-edgelb.json
+
+dcos package install edgelb --yes
+# For some reason the older version didn't install the CLI for me, not sure if it's a fluke or the following line is necessary
+# debug # dcos package install edgelb --cli --yes
+
+dcos package repo add --index=0 edge-lbpool https://edge-lb-infinity-artifacts.s3.amazonaws.com/permanent/tag/v0.1.9/edgelb-pool/stub-universe-edgelb-pool.json
+
+# is this cli module ecessary?
+echo
+echo
+echo "Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
+dcos package install edgelb-pool --cli --yes
+
+###### Install K8S, this takes a while so starting it now
+# TODO: UNCOMMENT dcos package install beta-kubernetes --yes
+## per: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+## xcode-select --install
+## brew install kubectl
+## if it's already installed: brew upgrade kubernetes-cli
+## brew install bash-completion
+
+# Wait for Edge-LB to install
+echo
+echo Waiting for edge-lb to install
+until dcos edgelb ping; do sleep 3 & echo "still waiting..."; done
+
+
+###### Add demo app json's
+rm /tmp/nginx-example.yaml 2>/dev/null
+
+# Take the ELB and strip off the http://
+BACKEND=$(echo $ELB | sed 's/http:\/\///')  
+sed "s|ReplaceThis|$BACKEND|g" /c/demo/nginx-example.yaml > /tmp/nginx-example.yaml
+
+#echo
+#echo "about to config edgelb"
+#read -p "Press enter to continue."
+
+# the config command is being replaced with create, but it's not released yet
+# TODO: remove config once next edgelb version is released
+echo
+echo About to run 2 commands, one will fail, ignore it
+echo Creating nginx config in edge-lb
+dcos edgelb config /tmp/nginx-example.yaml
+dcos edgelb create /tmp/nginx-example.yaml
+echo
+echo Done with running 2 commands
+
+
+dcos marathon app add /c/demo/nginx-example.json
+dcos marathon app add /c/demo/nginx-load.json
+dcos marathon app add /c/demo/allocation-load.json
+
+
+##### Install older v2.0.2 of cassandra, so we can later upgrade it to a newer version in the demo. 
+dcos package install cassandra --package-version 2.0.2-3.0.14 --yes
+# to demo scaling it to 4 nodes do: dcos cassandra --name=/cassandra update start --options=cassandra.json
+echo
+echo Done. NOTE: You must wait at lest 20 seconds before nginx will appear behind the ELB
+echo
+

@@ -1,0 +1,6 @@
+{
+  "service": {
+    "principal": "<service-account-id>",
+    "secret_name": "edge-lb/<secret-name>"
+  }
+}
