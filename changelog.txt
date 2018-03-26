@@ -1,0 +1,11 @@
+3-20-18 UPDATE:
+Added kubernetes GA to auto install (all defaults)
+Updated cassandra autoinstall to be 2nd to most recent version
+Removed hard coded paths in the script
+Renamed script from dcosnew to runme
+Added launching of chrome for K8S dashboard
+
+TODO: ssh-add ~/ccm-priv.key, not included in repo
+
+TODO: Created user1, user2, team1 and team2 (groups), secrets for the groups, and marathon folders for the teams
+

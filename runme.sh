@@ -1,8 +1,16 @@
 #!/bin/bash
+### todo incorporate ssh tunnel from https://docs.mesosphere.com/services/kubernetes/1.0.1-1.9.4/connecting-clients/
+
+#and everything from https://gist.github.com/ToddGreenstein/346b769c1ba552dad5371f2c8c908170
+
+# and add example k8s app
+
+# and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
+
 #
-# Revision 2-21-18
+# Revision 3-21-18
 #
-# This script sets up an existing CCM cluster with nginx, cassandra, and a basic load generators. 
+# This script sets up an existing CCM cluster with nginx, kubernetes, cassandra, and basic load generators. 
 #
 # The first argument is the master URL, the second is the AWS ELB that is in front of the public agent
 # Simply copy the URLs from CCM and paste them to the CLI
@@ -42,15 +50,18 @@ echo
 echo "Public agent ELB URL: " $ELB
 
 #echo
-#echo This script will install nginx, edge-lb for nginx, kubernetes, and the first Cassandra version that uses the SDK.
-#echo An 11 node CCM cluster is necessary for this
-#echo
+echo "This script will install nginx, edge-lb for nginx, kubernetes, and a slightly older version of Cassandra."
+echo "It will also wipe out your dcos and kubectl configurations"
+echo An 11 node CCM cluster is necessary for this
+echo
+read -p "Press enter to continue."
 
 # Clean out ALL existing clusters since we use a lot of CCM clusters
 # Warning, you might not want this done if you have a normal lab system you use
 echo
 echo "Removing all of the CLI's configured DC/OS clusters"
 rm -rf ~/.dcos/clusters
+# TODO consider dcos cluster remove --all   instead
 
 echo 
 echo "Running command: dcos cluster setup ..."
@@ -58,12 +69,25 @@ dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=de
 
 
 ###### Install K8S, this takes a while so starting it now
-# The config file deploys it in HA mode
+# The config file deploys it in HA mode, but we aren't using it
+# because we can show an upgrade to HA while it's running.
 echo
 echo Installing kubernetes
-dcos package install kubernetes --package-version=1.0.1-1.9.4 --options=kubernetes.json --yes
+dcos package install kubernetes --yes
+
+### INSTALL AND SETUP KUBECTL
 ## per: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-## brew install kubectl
+## REMOVE ALL PREVIOUS VERSIONS
+## brew uninstall --force kubernetes-cli
+# I couldn't get the brew installed version of kubectl to work
+#
+# rm /usr/local/bin/kubectl
+# rm -rf ~.kube
+curl -o /usr/local/bin/kubectl -O https://storage.googleapis.com/kubernetes-release/release/v1.9.5/bin/darwin/amd64/kubectl
+chmod +X /usr/loca/bin/kubectl
+
+## TODO: figure out how to pin kubectl to the dcos package version
+## brew install kubectl@1.9.4 DOESN'T WORK
 ## brew install bash-completion
 
 ###### Install the CLI sub commands that might be used
@@ -160,3 +184,36 @@ echo
 echo "Configuring kubectl"
 dcos kubernetes kubeconfig
 
+# ADD EXAMPLE K8S APP
+kubectl apply -f k8s-hello-app.yaml
+
+
+#### SETUP TEAM1 USER AND GROUP
+dcos security org users create user1 --password=deleteme
+dcos security org groups create team1
+dcos security org groups add_user team1 user1
+dcos security secrets create /team1/secret --value="team1-secret"
+dcos:secrets:list:default:/team1 full 
+dcos security org groups grant team1 dcos:secrets:default:/team1/* full
+dcos security org groups grant team1 dcos:service:marathon:marathon:services:/team1 full
+dcos security org groups grant team1 dcos:adminrouter:service:marathon full
+# Appears to be necessary per COPS-2534
+dcos security org groups grant team1 dcos:secrets:list:default:/ read
+# Make the marathon folder by making the app
+dcos marathon app add team1-example.json
+####
+
+#### SETUP TEAM2 USER AND GROUP
+dcos security org users create user2 --password=deleteme
+dcos security org groups create team2
+dcos security org groups add_user team2 user2
+dcos security secrets create /team2/secret --value="team2-secret"
+dcos:secrets:list:default:/team2 full 
+dcos security org groups grant team2 dcos:secrets:default:/team2/* full
+dcos security org groups grant team2 dcos:service:marathon:marathon:services:/team2 full
+dcos security org groups grant team2 dcos:adminrouter:service:marathon full
+# Appears to be necessary per COPS-2534
+dcos security org groups grant team2 dcos:secrets:list:default:/ read
+# Make the marathon folder by making the app
+dcos marathon app add team2-example.json
+####

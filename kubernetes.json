@@ -10,7 +10,7 @@
     "high_availability": true,
     "service_cidr": "10.100.0.0/16",
     "network_provider": "dcos",
-    "node_count": 1,
+    "node_count": 3,
     "cloud_provider": "(none)",
     "public_node_count": 0,
     "reserved_resources": {
