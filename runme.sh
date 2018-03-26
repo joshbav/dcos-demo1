@@ -4,7 +4,7 @@
 #and everything from https://gist.github.com/ToddGreenstein/346b769c1ba552dad5371f2c8c908170
 
 # and add example k8s app
-
+# add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
 
 #
@@ -83,17 +83,15 @@ dcos package install kubernetes --yes
 #
 # rm /usr/local/bin/kubectl
 # rm -rf ~.kube
-curl -o /usr/local/bin/kubectl -O https://storage.googleapis.com/kubernetes-release/release/v1.9.5/bin/darwin/amd64/kubectl
-chmod +X /usr/loca/bin/kubectl
-
-## TODO: figure out how to pin kubectl to the dcos package version
-## brew install kubectl@1.9.4 DOESN'T WORK
+#curl -o /usr/local/bin/kubectl -O https://storage.googleapis.com/kubernetes-release/release/v1.9.5/bin/darwin/amd64/kubectl
+#chmod +X /usr/loca/bin/kubectl
 ## brew install bash-completion
 
 ###### Install the CLI sub commands that might be used
 # Note the subcommand modules in 1.10 onward are now installed for a particular cluster, 
 # thus the modules need to be re-installed for each new cluster
 # So to make things simple we're just installing the common ones 
+# The goal is to be able to do just a dcos command and have an impressive list for the demo
 echo
 echo "Installing DCOS CLI modules"
 dcos package install dcos-enterprise-cli --cli --yes
@@ -112,8 +110,6 @@ dcos package install hdfs --cli --yes
 #dcos package install kubernetes --cli --yes
 
 # debug # read -p "Press enter to continue."
-
-# OLD  dcos package install marathon-lb --yes
 
 ####### EDGE-LB
 echo
