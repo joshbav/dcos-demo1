@@ -3,6 +3,7 @@
 
 #and everything from https://gist.github.com/ToddGreenstein/346b769c1ba552dad5371f2c8c908170
 
+# add keith's is_running() https://mail.google.com/mail/u/0/#inbox/162648922301ad6f
 # and add example k8s app
 # add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
@@ -149,7 +150,7 @@ until dcos edgelb ping; do sleep 3 & echo "still waiting..."; done
 rm /tmp/nginx-example.yaml 2>/dev/null
 # Take the ELB and strip off the http://
 BACKEND=$(echo $ELB | sed 's/http:\/\///')  
-sed "s|ReplaceThis|$BACKEND|g" /c/demo/nginx-example.yaml > /tmp/nginx-example.yaml
+sed "s|ReplaceThis|$BACKEND|g" /c/demo1/nginx-example.yaml > /tmp/nginx-example.yaml
 
 #echo
 #read -p "Press enter to continue."
@@ -164,9 +165,9 @@ dcos edgelb create /tmp/nginx-example.yaml
 
 echo
 echo "Installing marathon jsons"
-dcos marathon app add /c/demo/nginx-example.json
-dcos marathon app add /c/demo/nginx-load.json
-dcos marathon app add /c/demo/allocation-load.json
+dcos marathon app add /c/demo1/nginx-example.json
+dcos marathon app add /c/demo1/nginx-load.json
+dcos marathon app add /c/demo1/allocation-load.json
 
 
 ##### Install older v2.0.3 of cassandra, so we can later upgrade it to a newer version in the demo. 
