@@ -2,11 +2,19 @@
 ### todo incorporate ssh tunnel from https://docs.mesosphere.com/services/kubernetes/1.0.1-1.9.4/connecting-clients/
 
 #and everything from https://gist.github.com/ToddGreenstein/346b769c1ba552dad5371f2c8c908170
-
+# use dcos cluster remove [<name> | --all] instead
 # add keith's is_running() https://mail.google.com/mail/u/0/#inbox/162648922301ad6f
 # and add example k8s app
 # add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
+
+# add example group deployment
+
+# add from https://docs.google.com/document/d/1BYJHOEww_TcrfOqpZLcQjkNbSJGB6vMz-1Z2EEn9if4/edit#heading=h.g9m04fz12r7t
+
+# add from https://docs.google.com/document/d/1Us-T8-by2DLxKQzA72XroKerfn5kAfuysyRBY4vCFf4/edit
+
+# add cassandra from https://docs.google.com/document/d/1Gm9fq5XjWvjaGbgse6KL_m-FKlWwh2RD1xQnM5U65vg/edit
 
 #
 # Revision 3-21-18
@@ -213,4 +221,8 @@ dcos security org groups grant team2 dcos:adminrouter:service:marathon full
 dcos security org groups grant team2 dcos:secrets:list:default:/ read
 # Make the marathon folder by making the app
 dcos marathon app add team2-example.json
+####
+
+#### SETUP EXAMPLE DEPENDENCY
+dcos marathon group add example-dependency.json
 ####
