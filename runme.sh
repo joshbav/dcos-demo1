@@ -8,6 +8,10 @@
 # add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
 
+# add push job into jenkins https://wiki.jenkins.io/display/JENKINS/Remote+access+API
+
+# combine simple-app-demo.json with this demo
+
 # add example group deployment
 
 # add from https://docs.google.com/document/d/1BYJHOEww_TcrfOqpZLcQjkNbSJGB6vMz-1Z2EEn9if4/edit#heading=h.g9m04fz12r7t
