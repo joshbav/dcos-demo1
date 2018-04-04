@@ -76,6 +76,10 @@ echo "Removing all of the CLI's configured DC/OS clusters"
 rm -rf ~/.dcos/clusters
 # TODO consider dcos cluster remove --all   instead
 
+echo "Removing kubectl configuration (rm -rf ~/.kube)"
+rm -rf ~/.kube
+
+
 echo 
 echo "Running command: dcos cluster setup ..."
 dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=deleteme
@@ -94,8 +98,7 @@ dcos package install kubernetes --yes
 ## brew uninstall --force kubernetes-cli
 # I couldn't get the brew installed version of kubectl to work
 #
-# rm /usr/local/bin/kubectl
-# rm -rf ~.kube
+# rm /usr/local/bin/Kubectl
 #curl -o /usr/local/bin/kubectl -O https://storage.googleapis.com/kubernetes-release/release/v1.9.5/bin/darwin/amd64/kubectl
 #chmod +X /usr/loca/bin/kubectl
 ## brew install bash-completion
@@ -120,7 +123,7 @@ dcos package install hdfs --cli --yes
 #dcos package install kibana --cli --yes
 #dcos package install portworx --cli --yes
 ### TODO: change from beta when GA is released
-#dcos package install kubernetes --cli --yes
+dcos package install kubernetes --cli --yes
 
 # debug # read -p "Press enter to continue."
 
@@ -194,7 +197,7 @@ echo "Configuring kubectl"
 dcos kubernetes kubeconfig
 
 # ADD EXAMPLE K8S APP
-kubectl apply -f k8s-hello-app.yaml
+kubectl apply -f k8s-example-app.yaml
 
 
 #### SETUP TEAM1 USER AND GROUP
@@ -202,7 +205,7 @@ dcos security org users create user1 --password=deleteme
 dcos security org groups create team1
 dcos security org groups add_user team1 user1
 dcos security secrets create /team1/secret --value="team1-secret"
-dcos:secrets:list:default:/team1 full 
+dcos security org groups grant team1 dcos:secrets:list:default:/team1 full 
 dcos security org groups grant team1 dcos:secrets:default:/team1/* full
 dcos security org groups grant team1 dcos:service:marathon:marathon:services:/team1 full
 dcos security org groups grant team1 dcos:adminrouter:service:marathon full
@@ -217,7 +220,7 @@ dcos security org users create user2 --password=deleteme
 dcos security org groups create team2
 dcos security org groups add_user team2 user2
 dcos security secrets create /team2/secret --value="team2-secret"
-dcos:secrets:list:default:/team2 full 
+dcos security org groups grant team2 dcos:secrets:list:default:/team2 full 
 dcos security org groups grant team2 dcos:secrets:default:/team2/* full
 dcos security org groups grant team2 dcos:service:marathon:marathon:services:/team2 full
 dcos security org groups grant team2 dcos:adminrouter:service:marathon full

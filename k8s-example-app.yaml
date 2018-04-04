@@ -1,19 +1,19 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: hello-node
+  name: example-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
-    app: hello-node
+    app: example-app
   template:
     metadata:
-      name: hello-node
+      name: example-app
       labels:
-        app: hello-node
+        app: example-app
     spec:
       containers:
-      - name: hello-node
+      - name: example-app
         image: smugcloud/hello-node
         ports:
         - containerPort: 9000
@@ -22,10 +22,10 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: hello-node
+  name: example-app
 spec:
   selector:
-    app: hello-node
+    app: example-app
   ports:
     - protocol: TCP
       port: 80
