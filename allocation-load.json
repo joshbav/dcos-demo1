@@ -8,7 +8,7 @@
     "volumes": []
   },
   "cpus": 0.5,
-  "disk": 0,
+  "disk": 6000,
   "instances": 4,
   "maxLaunchDelaySeconds": 1,
   "mem": 2500,
