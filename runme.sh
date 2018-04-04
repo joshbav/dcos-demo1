@@ -1,4 +1,5 @@
 #!/bin/bash
+
 ### todo incorporate ssh tunnel from https://docs.mesosphere.com/services/kubernetes/1.0.1-1.9.4/connecting-clients/
 
 #and everything from https://gist.github.com/ToddGreenstein/346b769c1ba552dad5371f2c8c908170
