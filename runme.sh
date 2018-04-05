@@ -6,6 +6,7 @@
 # use dcos cluster remove [<name> | --all] instead
 # add keith's is_running() https://mail.google.com/mail/u/0/#inbox/162648922301ad6f
 # and add example k8s app
+# add alex's k8s demo
 # add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
 
@@ -63,7 +64,7 @@ ELB=$(echo $ELB | sed s'/.com\//.com/')
 echo
 echo "Public agent ELB URL: " $ELB
 
-#echo
+echo
 echo "This script will install nginx, edge-lb for nginx, kubernetes, and a slightly older version of Cassandra."
 echo "It will also wipe out your dcos and kubectl configurations"
 echo An 11 node CCM cluster is necessary for this
@@ -73,16 +74,16 @@ read -p "Press enter to continue."
 # Clean out ALL existing clusters since we use a lot of CCM clusters
 # Warning, you might not want this done if you have a normal lab system you use
 echo
-echo "Removing all of the CLI's configured DC/OS clusters"
+echo "**** Removing all of the CLI's configured DC/OS clusters (rm -rf ~/.dcos/clusters)"
 rm -rf ~/.dcos/clusters
 # TODO consider dcos cluster remove --all   instead
 
-echo "Removing kubectl configuration (rm -rf ~/.kube)"
+echo "**** Removing kubectl configuration (rm -rf ~/.kube)"
 rm -rf ~/.kube
 
 
 echo 
-echo "Running command: dcos cluster setup ..."
+echo "**** Running command: dcos cluster setup ..."
 dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=deleteme
 
 
@@ -90,7 +91,7 @@ dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=de
 # The config file deploys it in HA mode, but we aren't using it
 # because we can show an upgrade to HA while it's running.
 echo
-echo Installing kubernetes
+echo **** Installing latest Kubernetes
 dcos package install kubernetes --yes
 
 ### INSTALL AND SETUP KUBECTL
@@ -110,30 +111,27 @@ dcos package install kubernetes --yes
 # So to make things simple we're just installing the common ones 
 # The goal is to be able to do just a dcos command and have an impressive list for the demo
 echo
-echo "Installing DCOS CLI modules"
+echo "**** Installing DCOS CLI modules"
 dcos package install dcos-enterprise-cli --cli --yes
-# NOTE because I normally demo cassandr and show the upgrade process, I'm not installing the new version
+# NOTE because I normally demo cassandra and show the upgrade process, I'm not installing the new version
 ### dcos package install cassandra --cli --yes
-#dcos package install datastax-dse --cli --yes
-#dcos package install datastax-ops --cli --yes
+dcos package install datastax-dse --cli --yes
+dcos package install datastax-ops --cli --yes
 dcos package install spark --cli --yes
 dcos package install kafka --cli --yes
 #dcos package install confluent-kafka --cli --yes
-#dcos package install elastic --cli --yes
+dcos package install elastic --cli --yes
 dcos package install hdfs --cli --yes
-#dcos package install kibana --cli --yes
-#dcos package install portworx --cli --yes
-### TODO: change from beta when GA is released
-dcos package install kubernetes --cli --yes
+dcos package install kibana --cli --yes
+dcos package install portworx --cli --yes
 
 # debug # read -p "Press enter to continue."
 
 ####### EDGE-LB
 echo
 echo
-echo Installing repo for Edge-LB v1.0
+echo **** Installing repo for Edge-LB v1.0
 echo NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOTE BE UP TO DATE
-echo
 echo
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.0/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
@@ -145,7 +143,7 @@ dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edg
 # is this cli module ecessary?
 echo
 echo
-echo "Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
+echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
 dcos package install edgelb-pool --cli --yes
 
 ###### Install K8S, this takes a while so starting it now
@@ -158,7 +156,7 @@ dcos package install edgelb-pool --cli --yes
 
 # Wait for Edge-LB to install
 echo
-echo Waiting for edge-lb to install
+echo **** Waiting for edge-lb to install
 until dcos edgelb ping; do sleep 3 & echo "still waiting..."; done
 
 
@@ -174,33 +172,27 @@ sed "s|ReplaceThis|$BACKEND|g" /c/demo1/nginx-example.yaml > /tmp/nginx-example.
 # the config command is being replaced with create, but it's not released yet
 # TODO: remove config once next edgelb version is released
 echo
-echo Creating nginx config in edge-lb
+echo **** Creating NGINX config in edge-lb
 # delete this dcos edgelb config /tmp/nginx-example.yaml
 dcos edgelb create /tmp/nginx-example.yaml
 
 
 echo
-echo "Installing marathon jsons"
+echo "**** Installing marathon jsons"
 dcos marathon app add /c/demo1/nginx-example.json
 dcos marathon app add /c/demo1/nginx-load.json
 dcos marathon app add /c/demo1/allocation-load.json
-
+# add EXAMPLE DEPENDENCY AKA APP GROUP
+dcos marathon group add example-dependency.json
 
 ##### Install older v2.0.3 of cassandra, so we can later upgrade it to a newer version in the demo. 
+echo
+echo "**** Installing older cassandra"
 dcos package install cassandra --package-version 2.0.3-3.0.14 --yes
 # to demo scaling it to 4 nodes do: dcos cassandra --name=/cassandra update start --options=cassandra.json
+
 echo
-echo Done. NOTE: You must wait at least 20 seconds before nginx will appear behind the ELB
-echo
-
-# SETUP KUBECTL. RUNNING THIS AT THE END SINCE KUBERNETES WILL HAVE PARTIALLY INSTALLED BY NOW
-echo "Configuring kubectl"
-dcos kubernetes kubeconfig
-
-# ADD EXAMPLE K8S APP
-kubectl apply -f k8s-example-app.yaml
-
-
+echo "**** Setting up example DC/OS users, groups, folders, and secrets"
 #### SETUP TEAM1 USER AND GROUP
 dcos security org users create user1 --password=deleteme
 dcos security org groups create team1
@@ -231,6 +223,16 @@ dcos security org groups grant team2 dcos:secrets:list:default:/ read
 dcos marathon app add team2-example.json
 ####
 
-#### SETUP EXAMPLE DEPENDENCY
-dcos marathon group add example-dependency.json
-####
+# SETUP KUBECTL. RUNNING THIS AT THE END SINCE KUBERNETES WILL HAVE HOPEFULLY PARTIALLY INSTALLED BY NOW
+echo
+echo "**** Configuring kubectl"
+dcos kubernetes kubeconfig
+sleep 2
+
+# ADD EXAMPLE K8S APP
+echo
+echo "**** Adding example kubernets app"
+kubectl apply -f k8s-example-app.yaml
+
+echo
+echo "**** DONE. NOTE: You must wait at least 20 seconds before nginx will appear behind the ELB"
