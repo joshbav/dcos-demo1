@@ -135,6 +135,7 @@ echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOTE BE UP TO DA
 echo
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.0/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
+dcos package install edgelb --cli --yes
 dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.0.0/assets/stub-universe-edgelb-pool.json
 echo
 echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
