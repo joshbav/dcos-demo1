@@ -80,6 +80,8 @@ dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=de
 ####
 
 #### ADD THE CCM SSH KEY, SINCE SSH-ADD IS EPHEMERAL AND A REBOOT WILL CLEAR IT
+echo
+echo "**** Adding CCM SSH key" 
 ssh-add ~/ccm-priv.key
 ####
 
@@ -89,6 +91,7 @@ ssh-add ~/ccm-priv.key
 echo
 echo "**** Installing latest Kubernetes"
 dcos package install kubernetes --yes
+dcos package install kubernetes --cli --yes
 ####
 
 #### INSTALL AND SETUP KUBECTL
@@ -131,7 +134,7 @@ dcos package install portworx --cli --yes
 echo
 echo
 echo "**** Installing repo for Edge-LB v1.0"
-echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOTE BE UP TO DATE"
+echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOT BE UP TO DATE"
 echo
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.0/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
@@ -168,10 +171,10 @@ dcos marathon app add allocation-load.json
 dcos marathon group add example-dependency.json
 ####
 
-#### Install older v2.0.3 of cassandra, so we can later upgrade it to a newer version in the demo. 
+#### Install older v2.1.0 of cassandra, so we can later upgrade it to a newer version in the demo. 
 echo
 echo "**** Installing older cassandra"
-dcos package install cassandra --package-version 2.0.3-3.0.14 --yes
+dcos package install cassandra --package-version 2.1.0-3.0.16 --yes
 ####
 
 echo
