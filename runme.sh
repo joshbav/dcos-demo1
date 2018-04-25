@@ -89,8 +89,8 @@ ssh-add ~/ccm-priv.key
 # The config file deploys it in HA mode, but we aren't using it
 # because we can show an upgrade to HA while it's running.
 echo
-echo "**** Installing latest Kubernetes"
-dcos package install kubernetes --yes
+echo "**** Installing latest Kubernetes in HA mode using kubernetes.json config"
+dcos package install kubernetes --options=kubernetes.json --yes
 dcos package install kubernetes --cli --yes
 ####
 
