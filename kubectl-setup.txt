@@ -1,0 +1,10 @@
+1. dcos node ssh --master-proxy --leader
+2. toolbox (launch coreos's fedora container, since you can't install anything in coreos)
+3. curl -o /usr/local/bin/dcos -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.11/dcos
+4. chmod +x /usr/local/bin/dcos
+5. dcos cluster setup https://<master's private IP> --username=bootstrapuser --password=deleteme --insecure
+
+6. yum install -y kubernetes-client 
+7. dcos package install kubernetes --cli --yes
+
+8. dcos kubernetes kubeconfig --apiserver-url=https://apiserver.kubernetes.l4lb.thisdcos.directory:6443 --insecure-skip-tls-verify

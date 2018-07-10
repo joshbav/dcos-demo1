@@ -86,12 +86,13 @@ ssh-add ~/ccm-priv.key
 ####
 
 #### INSTALL KUBERNETES, this takes a while so starting it now
+# Using older 1.9.7 since 1.10 is harder to setup
 # The config file deploys it in HA mode, but we aren't using it
 # because we can show an upgrade to HA while it's running.
 echo
-echo "**** Installing latest Kubernetes in HA mode using kubernetes.json config"
-dcos package install kubernetes --options=kubernetes.json --yes
-dcos package install kubernetes --cli --yes
+echo "**** Installing latest Kubernetes with defaults, not in HA mode"
+dcos package install kubernetes --package-version=1.0.3-1.9.7 --yes
+# shouldn't be necessary - dcos package install kubernetes --cli --yes
 ####
 
 #### INSTALL AND SETUP KUBECTL
@@ -138,10 +139,12 @@ echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOT BE UP TO DAT
 echo
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.0/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
+# TODO: Is the cli install necessary anymore?
 dcos package install edgelb --cli --yes
 dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.0.0/assets/stub-universe-edgelb-pool.json
 echo
 echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
+# TODO: Is the cli install necessary anymore?
 dcos package install edgelb-pool --cli --yes
 # Wait for Edge-LB to install
 echo
