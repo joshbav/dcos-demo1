@@ -10,7 +10,7 @@ Removed hard coded paths in the script, you must run runme.sh from it's folder, 
 
 Added example-dependency.json, which is a marathon group (2 apps tied together)
 
-TODO: ssh-add ~/ccm-priv.key, not included in repo
+ssh-add ~/ccm-priv.key, not included in repo
 
-TODO: Created user1, user2, team1 and team2 (groups), secrets for the groups, and marathon folders for the teams
+Created user1, user2, team1 and team2 (groups), secrets for the groups, and marathon folders for the teams
 
