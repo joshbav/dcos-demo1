@@ -11,6 +11,8 @@
 # add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
 
+# setup edge-lb newer verson, use service account, restrict access: https://docs.mesosphere.com/services/edge-lb/1.0/installing/
+
 # add push job into jenkins https://wiki.jenkins.io/display/JENKINS/Remote+access+API
 
 # combine simple-app-demo.json with this demo
@@ -32,6 +34,9 @@
 # Simply copy the URLs from CCM and paste them to the CLI
 #
 
+### SETUP BASH ALIASES INCASE I USE THEM, but on a mac only the 1st will be usefl
+alias k='kubectl' j='journalctl' s='systemctl'
+
 #### SETUP MASTER URL AND ELB URL
 if [ $1 == "" ]
 then
@@ -47,8 +52,8 @@ then
         echo
         exit 1
 fi
-# For the master change https to http
-MASTER_URL=$(echo $1 | sed 's/https/http/')
+# For the master change http to https so kubectl setup doesn't break
+MASTER_URL=$(echo $1 | sed 's/http/https/')
 echo
 echo "Master's URL: " $MASTER_URL
 # For the public node's ELB change https to http, and change .com/ to just .com
@@ -65,8 +70,15 @@ echo
 read -p "Press enter to continue."
 ####
 
+
+# Print each command as it's executed, for debugging
+set -x
+# Stop if any error happens
+# set -e
+
+
 #### CLEAN OU ALL EXISTING CLUSTERS SINCE WE USE A LOT OF CCM
-# Warning, you might not want this done if you have a normal lab system you use
+# Warning, you might not want to delete all your CLI cluster configs
 echo
 echo "**** Removing all of the CLI's configured DC/OS clusters (rm -rf ~/.dcos/clusters)"
 rm -rf ~/.dcos/clusters
@@ -75,8 +87,10 @@ echo
 echo "**** Removing kubectl configuration (rm -rf ~/.kube)"
 rm -rf ~/.kube
 echo 
+# Turn off cert verification since a self signed cert is used
 echo "**** Running command: dcos cluster setup ..."
 dcos cluster setup $MASTER_URL --insecure --username=bootstrapuser --password=deleteme
+dcos config set core.ssl_verify false
 ####
 
 #### ADD THE CCM SSH KEY, SINCE SSH-ADD IS EPHEMERAL AND A REBOOT WILL CLEAR IT
@@ -86,16 +100,14 @@ ssh-add ~/ccm-priv.key
 ####
 
 #### INSTALL KUBERNETES, this takes a while so starting it now
-# Using older 1.9.7 since 1.10 is harder to setup
-# The config file deploys it in HA mode, but we aren't using it
-# because we can show an upgrade to HA while it's running.
 echo
-echo "**** Installing latest Kubernetes with defaults, not in HA mode"
-dcos package install kubernetes --package-version=1.0.3-1.9.7 --yes
+echo "**** Installing older Kubernetes 1.10.4 in HA mode"
+dcos package install kubernetes --package-version=1.1.1-1.10.4 --yes 
+## --options=kubernetes-config.json --yes
 # shouldn't be necessary - dcos package install kubernetes --cli --yes
 ####
 
-#### INSTALL AND SETUP KUBECTL
+#### INSTALL KUBECTL
 ## per: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 ## REMOVE ALL PREVIOUS VERSIONS
 ## brew uninstall --force kubernetes-cli
@@ -111,7 +123,7 @@ dcos package install kubernetes --package-version=1.0.3-1.9.7 --yes
 # brew install bash-completion
 ####
 
-#### Install the CLI sub commands that might be used
+#### INSTALL CLI SUBCOMMANDS
 # Note the subcommand modules in 1.10 onward are now installed for a particular cluster, 
 # thus the modules need to be re-installed for each new cluster
 # So to make things simple we're just installing the common ones 
@@ -134,14 +146,12 @@ dcos package install portworx --cli --yes
 #### EDGE-LB
 echo
 echo
-echo "**** Installing repo for Edge-LB v1.0"
+echo "**** Installing repo for Edge-LB v1.0.3"
 echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOT BE UP TO DATE"
 echo
-dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.0/assets/stub-universe-edgelb.json 
+dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.3/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
-# TODO: Is the cli install necessary anymore?
-dcos package install edgelb --cli --yes
-dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.0.0/assets/stub-universe-edgelb-pool.json
+dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.0.3/assets/stub-universe-edgelb-pool.json
 echo
 echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
 # TODO: Is the cli install necessary anymore?
@@ -153,7 +163,10 @@ until dcos edgelb ping; do sleep 3 & echo "still waiting..."; done
 ####
 
 #### INSTALL NGINX-EXAMPLE'S EDGE-LB CONFIG
-rm /tmp/nginx-example-edge-lb.yaml 2>/dev/null
+if [ -e /tmp/nginx-example-edge-lb.yaml ]
+then 
+  rm /tmp/nginx-example-edge-lb.yaml rm 2>/dev/null
+fi
 # Take the ELB and strip off the http://
 BACKEND=$(echo $ELB | sed 's/http:\/\///')  
 sed "s|ReplaceThis|$BACKEND|g" nginx-example-edge-lb.yaml > /tmp/nginx-example-edge-lb.yaml
@@ -164,25 +177,36 @@ echo "**** Creating NGINX config in edge-lb"
 dcos edgelb create /tmp/nginx-example-edge-lb.yaml
 ####
 
+#### INSTALL EDGELB KUBECTL PROXY CONFIG
+echo
+echo "**** Installing kubectl proxy edge-lb config"
+dcos edgelb create kubectl-proxy.yaml
+####
+
 #### INSTALL MARATHON JSONS
 echo
 echo "**** Installing marathon jsons"
 dcos marathon app add nginx-example.json
 dcos marathon app add nginx-load.json
 dcos marathon app add allocation-load.json
-# add EXAMPLE DEPENDENCY AKA APP GROUP
+# add example Marathon app group
 dcos marathon group add example-dependency.json
 ####
 
-#### Install older v2.1.0 of cassandra, so we can later upgrade it to a newer version in the demo. 
+#### INSTALL OLDER V2.2.0 OF CASSANDRA
+# so we can later upgrade it to a newer version in the demo. 
 echo
 echo "**** Installing older cassandra"
-dcos package install cassandra --package-version 2.1.0-3.0.16 --yes
+dcos package install cassandra --package-version 2.2.0-3.0.16 --yes
+# In case it was installed manually before running this script,
+# which I do sometimes since I often terminate a node in AWS to show 
+# cassandra repairing, we will now install the CLI
+dcos package install cassandra --package-version 2.2.0-3.0.16 --cli --yes
 ####
 
+#### SETUP TEAM1 USER AND GROUP
 echo
 echo "**** Setting up example DC/OS users, groups, folders, and secrets"
-#### SETUP TEAM1 USER AND GROUP
 dcos security org users create user1 --password=deleteme
 dcos security org groups create team1
 dcos security org groups add_user team1 user1
@@ -212,7 +236,7 @@ dcos security org groups grant team2 dcos:secrets:list:default:/ read
 dcos marathon app add team2-example.json
 ####
 
-#### Add binary secret
+#### ADD BINARY SECRET
 echo
 echo "Adding example binary secret, named binary-secret."
 echo "To display it: dcos security secrets get /binary-secret"
@@ -222,7 +246,7 @@ dcos security secrets create /binary-secret --file binary-secret.txt
 #### SETUP KUBECTL. RUNNING THIS AT THE END SINCE KUBERNETES WILL HAVE HOPEFULLY PARTIALLY INSTALLED BY NOW
 echo
 echo "**** Configuring kubectl"
-dcos kubernetes kubeconfig
+dcos kubernetes kubeconfig  --apiserver-url $ELB:6443 --insecure-skip-tls-verify
 sleep 1
 ####
 
