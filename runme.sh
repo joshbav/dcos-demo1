@@ -8,7 +8,6 @@
 # add keith's is_running() https://mail.google.com/mail/u/0/#inbox/162648922301ad6f
 # and add example k8s app
 # add alex's k8s demo
-# add edgelb 1.0.1
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
 
 # setup edge-lb newer verson, use service account, restrict access: https://docs.mesosphere.com/services/edge-lb/1.0/installing/
@@ -17,7 +16,6 @@
 
 # combine simple-app-demo.json with this demo
 
-# add example group deployment
 
 # add from https://docs.google.com/document/d/1BYJHOEww_TcrfOqpZLcQjkNbSJGB6vMz-1Z2EEn9if4/edit#heading=h.g9m04fz12r7t
 
@@ -26,9 +24,9 @@
 # add cassandra from https://docs.google.com/document/d/1Gm9fq5XjWvjaGbgse6KL_m-FKlWwh2RD1xQnM5U65vg/edit
 
 #
-# Revision 3-21-18
+# Revision 8-21-18
 #
-# This script sets up an existing CCM cluster with nginx, kubernetes, cassandra, and basic load generators. 
+# This script sets up an existing CCM cluster with nginx, older kubernetes, older cassandra, and basic load generators. 
 #
 # The first argument is the master URL, the second is the AWS ELB that is in front of the public agent
 # Simply copy the URLs from CCM and paste them to the CLI
@@ -62,7 +60,7 @@ ELB=$(echo $ELB | sed s'/.com\//.com/')
 echo
 echo "Public agent ELB URL: " $ELB
 echo
-echo "This script will: install nginx, edge-lb for nginx, kubernetes, and a slightly older version of Cassandra."
+echo "This script will: install nginx, edge-lb for nginx, older kubernetes, and an older version of Cassandra."
 echo "It will also wipe out your dcos cli and kubectl configurations."
 echo "It will ssh-add the CCM private key, but it's assuming that key is ~/ccm-priv.key."
 echo "An 11 node CCM cluster is necessary for this"
@@ -107,7 +105,7 @@ dcos package install kubernetes --package-version=1.1.1-1.10.4 --yes
 # shouldn't be necessary - dcos package install kubernetes --cli --yes
 ####
 
-#### INSTALL KUBECTL
+#### COMMENTED OUT - INSTALL KUBECTL
 ## per: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 ## REMOVE ALL PREVIOUS VERSIONS
 ## brew uninstall --force kubernetes-cli
@@ -151,10 +149,12 @@ echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOT BE UP TO DAT
 echo
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.3/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
+# For some reason the CLI sometimes does not install via the last command, thus:
+dcos package install edgelb --cli --yes
 dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.0.3/assets/stub-universe-edgelb-pool.json
 echo
 echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
-# TODO: Is the cli install necessary anymore?
+# For some reason the CLI sometimes does not install via the last command, thus:
 dcos package install edgelb-pool --cli --yes
 # Wait for Edge-LB to install
 echo
@@ -177,7 +177,7 @@ echo "**** Creating NGINX config in edge-lb"
 dcos edgelb create /tmp/nginx-example-edge-lb.yaml
 ####
 
-#### INSTALL EDGELB KUBECTL PROXY CONFIG
+#### INSTALL EDGELB KUBECTL PROXY CONFIG EVEN THOUGH I'M NOT USING IT AT THIS TIME
 echo
 echo "**** Installing kubectl proxy edge-lb config"
 dcos edgelb create kubectl-proxy.yaml
@@ -243,17 +243,17 @@ echo "To display it: dcos security secrets get /binary-secret"
 dcos security secrets create /binary-secret --file binary-secret.txt
 ####
 
-#### SETUP KUBECTL. RUNNING THIS AT THE END SINCE KUBERNETES WILL HAVE HOPEFULLY PARTIALLY INSTALLED BY NOW
-echo
-echo "**** Configuring kubectl"
-dcos kubernetes kubeconfig  --apiserver-url $ELB:6443 --insecure-skip-tls-verify
-sleep 1
+#### COMMENTED OUT - SETUP KUBECTL. RUNNING THIS AT THE END SINCE KUBERNETES WILL HAVE HOPEFULLY PARTIALLY INSTALLED BY NOW
+#echo
+#echo "**** Configuring kubectl"
+#dcos kubernetes kubeconfig  --apiserver-url $ELB:6443 --insecure-skip-tls-verify
+#sleep 1
 ####
 
-#### ADD EXAMPLE K8S APP
-echo
-echo "**** Adding example kubernets app"
-kubectl apply -f k8s-example-app.yaml
+#### COMMENTED OUT - ADD EXAMPLE K8S APP
+#echo
+#echo "**** Adding example kubernets app"
+#kubectl apply -f k8s-example-app.yaml
 ####
 
 echo

@@ -2,14 +2,15 @@
 
 # This is how to run kubectl on the newer k8s on dc/os without setting up the proxy. The idea is to run kubectl on a master and use a minuteman address.
 
-
-# you must first: 
+#### TO USE THIS SCRIPT:
+# FIRST SSH TO MASTER NODE
 #dcos node ssh --master-proxy --leader
-#then
-#toolbox 
-#(launch coreos's fedora container, since you can't install anything in coreos)
 
-# curl -o /tmp/setupcli.sh -O  
+#THEN use coreos's toolbox container (fedora install)
+#toolbox 
+
+# THEN pull down this script and run it
+#curl -LO https://raw.githubusercontent.com/joshbav/dcos-demo1/master/kubectl-setup.sh && bash kubectl-setup.sh
 
 #### GET DC/OS 1.11 CLI
 echo
@@ -23,6 +24,7 @@ chmod +x /usr/local/bin/dcos
 echo
 echo "SETTING UP DC/OS CLI TO 127.0.0.1 AS MASTER"
 dcos cluster setup https://127.0.0.1 --username=bootstrapuser --password=deleteme --insecure
+dcos package install dcos-enterprise-cli --cli --yes
 ####
 
 #### SETUP KUBECTL REPO SO IT PULLS THE LATEST VERSION, INSTALL IT
@@ -51,8 +53,16 @@ dcos package install kubernetes --cli --yes
 echo
 echo "SETTING UP KUBECTL"
 dcos kubernetes kubeconfig --apiserver-url=https://apiserver.kubernetes.l4lb.thisdcos.directory:6443 --insecure-skip-tls-verify
+echo
+echo "DOING KUBECTL GET NODES AS TEST"
+kubectl get nodes
 ####
 
 #### INSTALL EXAMPLE K8S APPS
-## left off here
+echo
+echo "CREATING EXAMPLE K8S DEPLOYMENT, SERVICE, ETC
+kubectl create -f https://raw.githubusercontent.com/joshbav/dcos-demo1/master/k8s-example-app.yaml
+echo
+echo "DONE"
+
 
