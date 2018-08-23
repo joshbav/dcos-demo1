@@ -14,7 +14,8 @@
 
 #### GET DC/OS 1.11 CLI
 echo
-echo "Fetching DC/OS 1.11 CLI"
+echo "INSTALLING DC/OS 1.11 CLI"
+echo
 curl -o /usr/local/bin/dcos -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.11/dcos
 chmod +x /usr/local/bin/dcos
 ####
@@ -23,6 +24,7 @@ chmod +x /usr/local/bin/dcos
 # NOTE: Must be running this script on DC/OS master
 echo
 echo "SETTING UP DC/OS CLI TO 127.0.0.1 AS MASTER"
+echo
 dcos cluster setup https://127.0.0.1 --username=bootstrapuser --password=deleteme --insecure
 dcos package install dcos-enterprise-cli --cli --yes
 ####
@@ -30,6 +32,7 @@ dcos package install dcos-enterprise-cli --cli --yes
 #### SETUP KUBECTL REPO SO IT PULLS THE LATEST VERSION, INSTALL IT
 echo
 echo "SETTING UP KUBECTL YUM REPO"
+echo
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -39,28 +42,34 @@ gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
+echo
 echo "INSTALLING KUBECTL"
+echo
 yum install -y kubectl
 ####
 
 #### INSTALL DC/OS CLI KUBERNETES CLIENT, LATEST VERSION
 echo
 echo "INSTALLING DC/OS KUBERNETES CLI MODULE, LATEST VERSION"
+echo
 dcos package install kubernetes --cli --yes
 ####
 
 #### SETUP KUBECTL
 echo
 echo "SETTING UP KUBECTL"
+echo
 dcos kubernetes kubeconfig --apiserver-url=https://apiserver.kubernetes.l4lb.thisdcos.directory:6443 --insecure-skip-tls-verify
 echo
 echo "DOING KUBECTL GET NODES AS TEST"
+echo
 kubectl get nodes
 ####
 
 #### INSTALL EXAMPLE K8S APPS
 echo
 echo "CREATING EXAMPLE K8S DEPLOYMENT, SERVICE, ETC"
+echo
 kubectl create -f https://raw.githubusercontent.com/joshbav/dcos-demo1/master/k8s-example-app.yaml
 echo
 echo "DONE"
