@@ -99,10 +99,11 @@ ssh-add ~/ccm-priv.key
 
 #### INSTALL KUBERNETES, this takes a while so starting it now
 echo
-echo "**** Installing older Kubernetes 1.10.4 in HA mode"
-dcos package install kubernetes --package-version=1.1.1-1.10.4 --yes 
+echo "**** Installing older Kubernetes 1.10.5 with defaults"
+dcos package install kubernetes --package-version=1.2.0-1.10.5 --yes 
 ## --options=kubernetes-config.json --yes
-# shouldn't be necessary - dcos package install kubernetes --cli --yes
+# In case K8s was deployed manually via the GUI before running this script
+dcos package install kubernetes --package-version=1.2.0-1.10.5 --cli --yes
 ####
 
 #### COMMENTED OUT - INSTALL KUBECTL
@@ -145,7 +146,7 @@ dcos package install portworx --cli --yes
 echo
 echo
 echo "**** Installing repo for Edge-LB v1.0.3"
-echo "NOTE: THIS MAY NOT BE THE NEWEST VERSION! THIS SCRIPT MAY NOT BE UP TO DATE"
+echo "NOTE: THIS MAY NOT BE THE NEWEST EDGE-LB VERSION!"
 echo
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.3/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes

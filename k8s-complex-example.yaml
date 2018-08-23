@@ -11,6 +11,8 @@
 # daemoset, job, statefulset, endpoint, ingress, service, configmap, secret, persistentvolumeclaim, storageclass, volume, volumeattachment, limitrange, initializerconfiguration, podtemplate, poddisrupttionbudge, priorityclass, podpreset, podsecuritypolidy, 
 # left off on: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#-strong-cluster-apis-strong-
 
+#https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature
+
 ### what not to use, but to comment it out:
 # hostPort = When you bind a Pod to a hostPort there are a limited number of places that pod can be scheduled. In most cases, hostPort is unnecessary, try using a Service object to expose your Pod. If you do require hostPort then you can only schedule as many Pods as there are nodes in your Kubernetes cluster.
 

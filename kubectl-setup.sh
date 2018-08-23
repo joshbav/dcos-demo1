@@ -60,7 +60,7 @@ kubectl get nodes
 
 #### INSTALL EXAMPLE K8S APPS
 echo
-echo "CREATING EXAMPLE K8S DEPLOYMENT, SERVICE, ETC
+echo "CREATING EXAMPLE K8S DEPLOYMENT, SERVICE, ETC"
 kubectl create -f https://raw.githubusercontent.com/joshbav/dcos-demo1/master/k8s-example-app.yaml
 echo
 echo "DONE"
