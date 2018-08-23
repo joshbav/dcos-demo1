@@ -122,6 +122,11 @@ dcos package install kubernetes --package-version=1.2.0-1.10.5 --cli --yes
 # brew install bash-completion
 ####
 
+#### UPDATE DC/OS LICENSE TO 100 NODE SE LICENSE
+# Since the CCM license is only 10 nodes
+dcos license renew dcos-license.txt
+####
+
 #### INSTALL CLI SUBCOMMANDS
 # Note the subcommand modules in 1.10 onward are now installed for a particular cluster, 
 # thus the modules need to be re-installed for each new cluster
