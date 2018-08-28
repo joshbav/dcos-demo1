@@ -78,7 +78,9 @@ set -x
 #### CLEAN OU ALL EXISTING CLUSTERS SINCE WE USE A LOT OF CCM
 # Warning, you might not want to delete all your CLI cluster configs
 echo
+echo
 echo "**** Removing all of the CLI's configured DC/OS clusters (rm -rf ~/.dcos/clusters)"
+echo
 rm -rf ~/.dcos/clusters
 # TODO consider dcos cluster remove --all   instead
 echo
@@ -93,13 +95,17 @@ dcos config set core.ssl_verify false
 
 #### ADD THE CCM SSH KEY, SINCE SSH-ADD IS EPHEMERAL AND A REBOOT WILL CLEAR IT
 echo
+echo
 echo "**** Adding CCM SSH key" 
+echo
 ssh-add ~/ccm-priv.key
 ####
 
 #### INSTALL KUBERNETES, this takes a while so starting it now
 echo
+echo
 echo "**** Installing older Kubernetes 1.10.5 with defaults"
+echo
 dcos package install kubernetes --package-version=1.2.0-1.10.5 --yes 
 ## --options=kubernetes-config.json --yes
 # In case K8s was deployed manually via the GUI before running this script
@@ -122,18 +128,15 @@ dcos package install kubernetes --package-version=1.2.0-1.10.5 --cli --yes
 # brew install bash-completion
 ####
 
-#### UPDATE DC/OS LICENSE TO 100 NODE SE LICENSE
-# Since the CCM license is only 10 nodes
-dcos license renew dcos-license.txt
-####
-
-#### INSTALL CLI SUBCOMMANDS
+### INSTALL CLI SUBCOMMANDS
 # Note the subcommand modules in 1.10 onward are now installed for a particular cluster, 
 # thus the modules need to be re-installed for each new cluster
 # So to make things simple we're just installing the common ones 
 # The goal is to be able to do just a dcos command and have an impressive list for the demo
 echo
+echo
 echo "**** Installing DCOS CLI modules"
+echo
 dcos package install dcos-enterprise-cli --cli --yes
 dcos package install datastax-dse --cli --yes
 dcos package install datastax-ops --cli --yes
@@ -147,17 +150,27 @@ dcos package install portworx --cli --yes
 ####
 # debug # read -p "Press enter to continue."
 
+#### UPDATE DC/OS LICENSE TO 100 NODE SE LICENSE
+# Since the CCM license is only 10 nodes
+echo
+echo
+echo "**** Updating DC/OS license to 100 nodes"
+echo
+dcos license renew dcos-license.txt
+####
+
+#
 #### EDGE-LB
 echo
 echo
-echo "**** Installing repo for Edge-LB v1.0.3"
+echo "**** Installing repo for Edge-LB v1.1.0"
 echo "NOTE: THIS MAY NOT BE THE NEWEST EDGE-LB VERSION!"
 echo
-dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.0.3/assets/stub-universe-edgelb.json 
+dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.1.0/assets/stub-universe-edgelb.json 
 dcos package install edgelb --yes
 # For some reason the CLI sometimes does not install via the last command, thus:
 dcos package install edgelb --cli --yes
-dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.0.3/assets/stub-universe-edgelb-pool.json
+dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.1.0/assets/stub-universe-edgelb-pool.json
 echo
 echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
 # For some reason the CLI sometimes does not install via the last command, thus:
@@ -179,19 +192,25 @@ sed "s|ReplaceThis|$BACKEND|g" nginx-example-edge-lb.yaml > /tmp/nginx-example-e
 #echo
 #read -p "Press enter to continue."
 echo
+echo
 echo "**** Creating NGINX config in edge-lb"
+echo
 dcos edgelb create /tmp/nginx-example-edge-lb.yaml
 ####
 
 #### INSTALL EDGELB KUBECTL PROXY CONFIG EVEN THOUGH I'M NOT USING IT AT THIS TIME
 echo
+echo
 echo "**** Installing kubectl proxy edge-lb config"
+echo
 dcos edgelb create kubectl-proxy.yaml
 ####
 
 #### INSTALL MARATHON JSONS
 echo
+echo
 echo "**** Installing marathon jsons"
+echo
 dcos marathon app add nginx-example.json
 dcos marathon app add nginx-load.json
 dcos marathon app add allocation-load.json
@@ -202,7 +221,9 @@ dcos marathon group add example-dependency.json
 #### INSTALL OLDER V2.2.0 OF CASSANDRA
 # so we can later upgrade it to a newer version in the demo. 
 echo
+echo
 echo "**** Installing older cassandra"
+echo
 dcos package install cassandra --package-version 2.2.0-3.0.16 --yes
 # In case it was installed manually before running this script,
 # which I do sometimes since I often terminate a node in AWS to show 
@@ -212,7 +233,9 @@ dcos package install cassandra --package-version 2.2.0-3.0.16 --cli --yes
 
 #### SETUP TEAM1 USER AND GROUP
 echo
+echo
 echo "**** Setting up example DC/OS users, groups, folders, and secrets"
+echo
 dcos security org users create user1 --password=deleteme
 dcos security org groups create team1
 dcos security org groups add_user team1 user1
@@ -244,8 +267,10 @@ dcos marathon app add team2-example.json
 
 #### ADD BINARY SECRET
 echo
+echo
 echo "Adding example binary secret, named binary-secret."
 echo "To display it: dcos security secrets get /binary-secret"
+echo
 dcos security secrets create /binary-secret --file binary-secret.txt
 ####
 
@@ -263,4 +288,6 @@ dcos security secrets create /binary-secret --file binary-secret.txt
 ####
 
 echo
+echo
 echo "**** DONE. NOTE: You must wait at least 20 seconds before nginx will appear behind the ELB"
+echo
