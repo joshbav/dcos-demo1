@@ -32,6 +32,14 @@
 # Simply copy the URLs from CCM and paste them to the CLI
 #
 
+#### DEBUG
+# Print each command as it's executed, for debugging
+# set -x
+# Stop if any error happens
+# set -e
+####
+
+
 ### SETUP BASH ALIASES INCASE I USE THEM, but on a mac only the 1st will be usefl
 alias k='kubectl' j='journalctl' s='systemctl'
 
@@ -67,13 +75,6 @@ echo "An 11 node CCM cluster is necessary for this"
 echo
 read -p "Press enter to continue."
 ####
-
-
-# Print each command as it's executed, for debugging
-set -x
-# Stop if any error happens
-# set -e
-
 
 #### CLEAN OU ALL EXISTING CLUSTERS SINCE WE USE A LOT OF CCM
 # Warning, you might not want to delete all your CLI cluster configs

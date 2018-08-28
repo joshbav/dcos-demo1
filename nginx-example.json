@@ -12,7 +12,7 @@
         },
         "protocol": "tcp",
         "servicePort": 10101,
-        "name": "nginx-example"
+        "name": "http"
       }
     ],
     "type": "DOCKER",

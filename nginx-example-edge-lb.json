@@ -1,0 +1,30 @@
+{
+  "apiVersion": "V2",
+  "name": "nginx-example",
+  "count": 1,
+  "haproxy": {
+    "frontends": [{
+      "bindPort": 80,
+      "protocol": "HTTP",
+      "linkBackend": {
+        "defaultBackend": "nginx-example",
+        "map": [{
+          "hostEq": "ReplaceThis",
+          "backend": "nginx-example"
+       }]
+      }
+    }],
+    "backends": [{
+      "name": "nginx-example",
+      "protocol": "HTTP",
+      "services": [{
+        "marathon": {
+          "serviceID": "/nginx-example"
+        },
+        "endpoint": {
+          "portName": "http"
+        }
+      }]
+    }]
+  }
+}
