@@ -70,7 +70,7 @@ kubectl get nodes
 echo
 echo "CREATING EXAMPLE K8S DEPLOYMENT, SERVICE, ETC"
 echo
-kubectl create -f https://raw.githubusercontent.com/joshbav/dcos-demo1/master/k8s-example-app.yaml
+kubectl create -f https://raw.githubusercontent.com/joshbav/apache-autoscaler/master/apache.yaml 
 echo
 echo "DONE"
 

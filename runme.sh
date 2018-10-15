@@ -10,7 +10,7 @@
 # add alex's k8s demo
 # and add /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --kiosk www.yahoo.com for k8s dashboard    https://<cluster-ip>/service/kubernetes-proxy/
 
-# setup edge-lb newer verson, use service account, restrict access: https://docs.mesosphere.com/services/edge-lb/1.0/installing/
+# setup edge-lb newer verson, use service account, restrict access: https://docs.mesosphere.com/services/edge-lb/1.2/installing/
 
 # add push job into jenkins https://wiki.jenkins.io/display/JENKINS/Remote+access+API
 
@@ -105,12 +105,12 @@ ssh-add ~/ccm-priv.key
 #### INSTALL KUBERNETES, this takes a while so starting it now
 echo
 echo
-echo "**** Installing older Kubernetes 1.10.5 with defaults"
+echo "**** Installing older Kubernetes 1.10.8 with defaults"
 echo
-dcos package install kubernetes --package-version=1.2.0-1.10.5 --yes 
+dcos package install kubernetes --package-version=1.2.2-1.10.7 --yes 
 ## --options=kubernetes-config.json --yes
 # In case K8s was deployed manually via the GUI before running this script
-dcos package install kubernetes --package-version=1.2.0-1.10.5 --cli --yes
+dcos package install kubernetes --package-version=1.2.2-1.10.7 --cli --yes
 ####
 
 #### COMMENTED OUT - INSTALL KUBECTL
@@ -164,14 +164,14 @@ dcos license renew dcos-license.txt
 #### EDGE-LB
 echo
 echo
-echo "**** Installing repo for Edge-LB v1.1.0"
+echo "**** Installing repo for Edge-LB v1.2.1"
 echo "NOTE: THIS MAY NOT BE THE NEWEST EDGE-LB VERSION!"
 echo
-dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.1.0/assets/stub-universe-edgelb.json 
+dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.2.1/assets/stub-universe-edgelb.json 
+dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.2.1/assets/stub-universe-edgelb-pool.json
 dcos package install edgelb --yes
 # For some reason the CLI sometimes does not install via the last command, thus:
 dcos package install edgelb --cli --yes
-dcos package repo add --index=0 edge-lbpool https://downloads.mesosphere.com/edgelb-pool/v1.1.0/assets/stub-universe-edgelb-pool.json
 echo
 echo "**** Installing edgelb-pool cli, which takes a while, probalby waiting for edge-lb to finish installing"
 # For some reason the CLI sometimes does not install via the last command, thus:
@@ -183,20 +183,20 @@ until dcos edgelb ping; do sleep 3 & echo "still waiting..."; done
 ####
 
 #### INSTALL NGINX-EXAMPLE'S EDGE-LB CONFIG
-if [ -e /tmp/nginx-example-edge-lb.yaml ]
+if [ -e /tmp/nginx-example-edge-lb.json ]
 then 
-  rm /tmp/nginx-example-edge-lb.yaml rm 2>/dev/null
+  rm /tmp/nginx-example-edge-lb.json 2>/dev/null
 fi
 # Take the ELB and strip off the http://
 BACKEND=$(echo $ELB | sed 's/http:\/\///')  
-sed "s|ReplaceThis|$BACKEND|g" nginx-example-edge-lb.yaml > /tmp/nginx-example-edge-lb.yaml
+sed "s|ReplaceThis|$BACKEND|g" nginx-example-edge-lb.json > /tmp/nginx-example-edge-lb.json
 #echo
 #read -p "Press enter to continue."
 echo
 echo
 echo "**** Creating NGINX config in edge-lb"
 echo
-dcos edgelb create /tmp/nginx-example-edge-lb.yaml
+dcos edgelb create /tmp/nginx-example-edge-lb.json
 ####
 
 #### INSTALL EDGELB KUBECTL PROXY CONFIG EVEN THOUGH I'M NOT USING IT AT THIS TIME
@@ -204,7 +204,7 @@ echo
 echo
 echo "**** Installing kubectl proxy edge-lb config"
 echo
-dcos edgelb create kubectl-proxy.yaml
+dcos edgelb create kubectl-proxy-edge-lb.yaml
 ####
 
 #### INSTALL MARATHON JSONS
