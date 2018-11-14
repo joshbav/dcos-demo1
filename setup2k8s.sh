@@ -1,12 +1,12 @@
 #### This script will install 2 K8s v2.0.0-1.12.1 clusters in 1.12, edge-lb, and configure edge-lb for kubectl
-#### NOTE: This script will move your existing kubeconfig file to /tmp
+#### NOTE: This script will move your existing kubectl config file to /tmp/kubectl-config
 #### by JoshB, following Alex Ly's setup directons at https://github.com/ably77/dcos-se/blob/master/Kubernetes/mke/README.md
 #### Note some changes were made from Alex's config, for example the first k8s cluster was renamed to kubernetes-cluster1
 #### Revision 11-13-18
 
 #### USAGE
 # 1. Create a 13 node or greater CCM cluster
-# 2. Type ./setup2k8s.sh 
+# 2. Type ./setup2k8s.sh  (but don't press enter) 
 # 3. In CCM right click on Dashboard (master), choose copy link address. Paste as first parameter. 
 #    Don't worry about it being HTTP, the script will convert it to HTTPS
 
@@ -17,12 +17,13 @@
 # 4. edgelb-kubectl-two-clusters.json 
 
 #### WHAT THIS DOESN'T DO
-# 1. Fix the license count
+# 1. Fix the DC/OS license
 # 2. Install example apps into the cluster
-# 3. WHAT ELSE? TODO!
+# 3. Use the latest K8s. This way we can demo the upgrade process.
+# 4. WHAT ELSE? TODO!
 
 
-#### BEGINNING OF SCRIPT
+#### BEGINNING OF SCRIPT ####
 
 #### SETUP MASTER URL AND ELB URL
 if [ $1 == "" ]
@@ -63,10 +64,11 @@ dcos config set core.ssl_verify false
 
 #### MOVE KUBECONFIG FILE
 echo
-echo "**** If /tmp/kube-config file exists, deleting it"
-rm -f /tmp/kube-config 2 > /dev/null
-echo "**** If ~/.kube/config exists, moving it to /tmp/kube-config
-mv ~/.kube/config /tmp/kube-config
+echo "**** If /tmp/kubectl-config file exists, deleting it"
+rm -f /tmp/kubectl-config 2 > /dev/null
+echo "**** If ~/.kube/config exists, moving it to /tmp/kubectl-config
+echo "     Therefore you now have no kubectl config file!"
+mv ~/.kube/config /tmp/kube-config 2 > /dev/null
 
 #### INSTALL MKE
 echo
