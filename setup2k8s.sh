@@ -66,13 +66,15 @@ dcos config set core.ssl_verify false
 echo
 echo "**** If /tmp/kubectl-config file exists, deleting it"
 rm -f /tmp/kubectl-config 2 > /dev/null
-echo "**** If ~/.kube/config exists, moving it to /tmp/kubectl-config
+echo "**** If ~/.kube/config exists, moving it to /tmp/kubectl-config"
 echo "     Therefore you now have no kubectl config file!"
-mv ~/.kube/config /tmp/kube-config 2 > /dev/null
+if [[ -e ~/.kube/config ]]; then 
+    mv ~/.kube/config /tmp/kube-config
+fi
 
 #### INSTALL MKE
 echo
-echo "**** Installing kubernetes (MKE) and Kubernetes CLI module"
+echo "**** Installing kubernetes manager (MKE) and Kubernetes CLI module"
 dcos package install kubernetes --yes
 # Might be redundant, but is harmless
 dcos package install kubernetes --cli --yes
