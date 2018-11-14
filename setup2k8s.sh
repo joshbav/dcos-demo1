@@ -1,3 +1,7 @@
+# TODO: reduce kube system resources, add k8s public nodes, setup clusters in prod and dev folders, setup ingress
+# alex's way of waiting for kube0 to be ready, but for both clusters
+
+
 #### This script will install 2 K8s v2.0.0-1.12.1 clusters in 1.12, edge-lb, and configure edge-lb for kubectl
 #### NOTE: This script will move your existing kubectl config file to /tmp/kubectl-config
 #### by JoshB, following Alex Ly's setup directons at https://github.com/ably77/dcos-se/blob/master/Kubernetes/mke/README.md
@@ -197,8 +201,8 @@ dcos edgelb show edgelb-kubectl-two-clusters
 #    Response: the service account secret has not been created yet
 #    Response data (51 bytes): the service account secret has not been created yet
 echo
-echo "**** Sleeping for 150 to wait for K8s clusters to finish installing, before running dcos kubernetes kubeconfig, to avoid an error condition" 
-sleep 150
+echo "**** Sleeping for 360 to wait for K8s clusters to finish installing, before running dcos kubernetes kubeconfig, to avoid an error condition" 
+sleep 360
 
 #### GET PUBLIC IP OF EDGELB PUBLIC AGENT
 # This is a real hack, and it might not work correctly! 

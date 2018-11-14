@@ -1,7 +1,13 @@
 {
   "service": {
-    "name": "kubernetes-cluster1",
+    "name": "/prod/kubernetes-cluster1",
     "service_account": "kubernetes-cluster1",
     "service_account_secret": "kubernetes-cluster1/sa"
-  }
+  },
+    "kubernetes": {
+        "private_node_count": 1,
+        "private_reserved_resources": {
+            "kube_cpus": 1
+        }
+    }
 }
