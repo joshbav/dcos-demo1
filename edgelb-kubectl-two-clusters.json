@@ -1,0 +1,60 @@
+{
+    "apiVersion": "V2",
+    "name": "edgelb-kubectl-two-clusters",
+    "count": 1,
+    "autoCertificate": true,
+    "haproxy": {
+        "frontends": [{
+                "bindPort": 6443,
+                "protocol": "HTTPS",
+                "certificates": [
+                    "$AUTOCERT"
+                ],
+                "linkBackend": {
+                    "defaultBackend": "kubernetes-cluster1"
+                }
+            },
+            {
+                "bindPort": 6444,
+                "protocol": "HTTPS",
+                "certificates": [
+                    "$AUTOCERT"
+                ],
+                "linkBackend": {
+                    "defaultBackend": "kubernetes-cluster2"
+                }
+            }
+        ],
+        "backends": [{
+                "name": "kubernetes-cluster1",
+                "protocol": "HTTPS",
+                "services": [{
+                    "mesos": {
+                        "frameworkName": "kubernetes-cluster1",
+                        "taskNamePattern": "kube-control-plane"
+                    },
+                    "endpoint": {
+                        "portName": "apiserver"
+                    }
+                }]
+            },
+            {
+                "name": "kubernetes-cluster2",
+                "protocol": "HTTPS",
+                "services": [{
+                    "mesos": {
+                        "frameworkName": "kubernetes-cluster2",
+                        "taskNamePattern": "kube-control-plane"
+                    },
+                    "endpoint": {
+                        "portName": "apiserver"
+
+                    }
+                }]
+            }
+        ],
+        "stats": {
+            "bindPort": 6090
+        }
+    }
+}

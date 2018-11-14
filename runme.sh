@@ -40,7 +40,7 @@
 ####
 
 
-### SETUP BASH ALIASES INCASE I USE THEM, but on a mac only the 1st will be usefl
+### SETUP BASH ALIASES INCASE I USE THEM, but on a mac only the 1st will be useful
 alias k='kubectl' j='journalctl' s='systemctl'
 
 #### SETUP MASTER URL AND ELB URL
@@ -102,17 +102,6 @@ echo
 ssh-add ~/ccm-priv.key
 ####
 
-#### INSTALL KUBERNETES, this takes a while so starting it now
-echo
-echo
-echo "**** Installing older Kubernetes 1.10.8 with defaults"
-echo
-dcos package install kubernetes --package-version=1.2.2-1.10.7 --yes 
-## --options=kubernetes-config.json --yes
-# In case K8s was deployed manually via the GUI before running this script
-dcos package install kubernetes --package-version=1.2.2-1.10.7 --cli --yes
-####
-
 #### COMMENTED OUT - INSTALL KUBECTL
 ## per: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 ## REMOVE ALL PREVIOUS VERSIONS
@@ -160,7 +149,6 @@ echo
 dcos license renew dcos-license.txt
 ####
 
-#
 #### EDGE-LB
 echo
 echo
@@ -179,6 +167,7 @@ dcos package install edgelb-pool --cli --yes
 # Wait for Edge-LB to install
 echo
 echo "**** Waiting for edge-lb to install"
+sleep 10
 until dcos edgelb ping; do sleep 3 & echo "still waiting..."; done
 ####
 
@@ -204,7 +193,6 @@ echo
 echo
 echo "**** Installing kubectl proxy edge-lb config"
 echo
-dcos edgelb create kubectl-proxy-edge-lb.yaml
 ####
 
 #### INSTALL MARATHON JSONS
