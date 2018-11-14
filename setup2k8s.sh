@@ -197,8 +197,8 @@ dcos edgelb show edgelb-kubectl-two-clusters
 #    Response: the service account secret has not been created yet
 #    Response data (51 bytes): the service account secret has not been created yet
 echo
-echo "**** Sleeping for 60 to wait for K8s clusters to finish installing, before running dcos kubernetes kubeconfig, to avoid an error condition" 
-sleep 60
+echo "**** Sleeping for 150 to wait for K8s clusters to finish installing, before running dcos kubernetes kubeconfig, to avoid an error condition" 
+sleep 150
 
 #### GET PUBLIC IP OF EDGELB PUBLIC AGENT
 # This is a real hack, and it might not work correctly! 
