@@ -9,7 +9,6 @@
 # 2. Type ./setup2k8s.sh 
 # 3. In CCM right click on Dashboard (master), choose copy link address. Paste as first parameter. 
 #    Don't worry about it being HTTP, the script will convert it to HTTPS
-# 4. In CCM right click on Public slave ELB, choose copy link address. Paste as second parameter
 
 #### OTHER FILES
 # 1. k8s-cluster1-options.json
@@ -150,7 +149,7 @@ rm -f /tmp/edge-lb-public-key.pem 2> /dev/null
 dcos security org service-accounts keypair /tmp/edge-lb-private-key.pem /tmp/edge-lb-public-key.pem
 dcos security org service-accounts create -p /tmp/edge-lb-public-key.pem -d "Edge-LB service account" edge-lb-principal
 # dcos security org service-accounts show edge-lb-principal
-# Getting error on next line, says it already exists, maybe it's built into 1.12?
+# Getting error on next line, says it already exists, assuming it was added for a strict mode cluster?
 dcos security secrets create-sa-secret --strict /tmp/edge-lb-private-key.pem edge-lb-principal dcos-edgelb/edge-lb-secret
 # Getting error on next line, says already part of group
 dcos security org groups add_user superusers edge-lb-principal
