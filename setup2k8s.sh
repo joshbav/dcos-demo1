@@ -1,5 +1,5 @@
 #### This script will install 2 K8s v2.0.0-1.12.1 clusters in 1.12, edge-lb, and configure edge-lb for kubectl
-
+#### NOTE: This script will move your existing kubeconfig file to /tmp
 #### by JoshB, following Alex Ly's setup directons at https://github.com/ably77/dcos-se/blob/master/Kubernetes/mke/README.md
 #### Note some changes were made from Alex's config, for example the first k8s cluster was renamed to kubernetes-cluster1
 #### Revision 11-13-18
@@ -61,6 +61,13 @@ echo
 echo "**** Setting core.ssl_verify to false"
 dcos config set core.ssl_verify false
 
+#### MOVE KUBECONFIG FILE
+echo
+echo "**** If /tmp/kube-config file exists, deleting it"
+rm -f /tmp/kube-config 2 > /dev/null
+echo "**** If ~/.kube/config exists, moving it to /tmp/kube-config
+mv ~/.kube/config /tmp/kube-config
+
 #### INSTALL MKE
 echo
 echo "**** Installing kubernetes (MKE) and Kubernetes CLI module"
@@ -104,6 +111,7 @@ sleep 15
 echo
 echo "**** Installing K8s cluster 1 v2.0.0-1.12.1 using k8s-cluster1-options.json"
 dcos kubernetes cluster create --package-version=2.0.0-1.12.1 --options=k8s-cluster1-options.json --yes
+# dcos kubernetes cluster debug plan status deploy --cluster-name=kubernetes-cluster1
 
 #### CREATE THE KUBERNETES-CLUSTER2 SERVICE ACCOUNT:
 rm -f /tmp/cluster2-private-key.pem 2> /dev/null
@@ -138,6 +146,7 @@ dcos security org users grant kubernetes-cluster2 dcos:mesos:agent:framework:rol
 echo
 echo "**** Installing K8s cluster 2 v2.0.0-1.12.1 using k8s-cluster2-options.json"
 dcos kubernetes cluster create --package-version=2.0.0-1.12.1 --options=k8s-cluster2-options.json --yes
+# dcos kubernetes cluster debug plan status deploy --cluster-name=kubernetes-cluster2
 
 #### INSTALL EDGE-LB V1.2.1
 dcos package repo add --index=0 edge-lb https://downloads.mesosphere.com/edgelb/v1.2.1/assets/stub-universe-edgelb.json
@@ -171,12 +180,21 @@ echo "Deploying edgelb config from edgelb-kubectl-two-clusters.json"
 dcos edgelb create edgelb-kubectl-two-clusters.json
 sleep 30
 echo
-echo "Running dcos edgelb status edgelb-kubernetes-cluster-proxy-basic"
+echo "Running dcos edgelb status edgelb-kubectl-two-clusters"
 echo "If this command doensn't work the script will break"
-dcos edgelb status edgelb-kubernetes-cluster-proxy-basic
+dcos edgelb status edgelb-kubectl-two-clusters
 echo
 echo "Running dcos edgelb show edgelb-kubectl-two-clusters"
 dcos edgelb show edgelb-kubectl-two-clusters
+
+#### WAITING TO AVOID ERROR WITH DCOS KUBECONFIG
+# For some reason even though the k8s clusters are done installing, there's still a delay needed to 
+# run dcos kubernetes kubeconfig, otherwise this error will result:
+#    Response: the service account secret has not been created yet
+#    Response data (51 bytes): the service account secret has not been created yet
+echo
+echo "**** Sleeping for 60 to wait for K8s clusters to finish installing, before running dcos kubernetes kubeconfig, to avoid an error condition" 
+sleep 60
 
 #### GET PUBLIC IP OF EDGELB PUBLIC AGENT
 # This is a real hack, and it might not work correctly! 
